@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../pacs/js/Leanscript.js"></script>
+  <style>
+  p { color:green; font-weight:bolder; margin:3px 0 0 10px; }
+  div { color:blue; margin-left:20px; font-size:14px; }
+  span { color:red; }
+  .teste_adicionado{
+    background-color:yellow;
+  };
+  </style>
+</head>
+<body>
+	<div id="teste" class="teste4"> ok esse eh um ID teste </div><br><br>
+	<div id="removed_class" class="classe_para_retirar"> ok esse eh um teste </div><br><br>
+	<div class="teste"> ok esse eh um teste </div><br><br>
+	<div class="teste"> ok esse eh um teste </div><br><br>
+	<div id="teste3" class="teste2"> TEST DEEP SELECTION </div><br><br>
+	<p id="browser_info" >Browser info:</p>
+	<script>
+	$(document).ready(function() {
+		Leanscript.each(Leanscript.browser, function(i, val) {
+			$("#browser_info").html( 'after', '<br>' + i + ":" + val );
+		});
+		console.log($("#teste").hasClass( 'teste4' ));
+		$("#teste").addClass( 'teste_adicionado' );
+		$("#removed_class").removeClass( 'classe_para_retirar' );
+		$("#teste").html( 'before', '</br><strong>rock and roll - ID</strong>' );
+		$(".teste").html( 'after', '</br><strong>rock and roll - CLASS</strong>' );
+		$("#teste3 .teste2").html( 'after', '</br><strong>deep selection IS WORKING! &nbsp;&nbsp;&nbsp;</strong>' );
+	});
+	</script>
+</body>
+</html>
