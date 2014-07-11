@@ -5,8 +5,9 @@
 </head>
 <body>
   <script type="text/javascript">
+
     var temp_home = {body:[
-       {div1:{id:"blabla",content:"nononono"}}
+       {div1:{id:"blabla",class:"blaclass",content:"nononono"}}
       ,{div2:"nononono2"}
       ,{ul:{class:"some_class",content:[
          {li1:{class:"selected",content:"nonono3"}}
@@ -22,56 +23,140 @@
       ]}}
     ]};
 
-    function render(temp, data) {
-      var tmp = JSON.parse( JSON.stringify(temp) );
-      function print(tag,attr){ //map tag
-        return (tag)//,JSON.stringify(attr));
-      };
-      function evaluate(node) {
-        for (tag in node) break;
-        node = String(tag)=="0"?node:node[tag];
+    var temp_head = {
+      div:"Header"
+    }
 
-        if (typeof node == "object") {
-          if (node instanceof Array) {
-            // node.reverse();
-            for (var i = node.length - 1; i >= 0; i--) {
-              evaluate(node[i]);
-            };
-          } else {
-            if (!node.content) node.content = "";
-            if (typeof node.content != "string") {
-              evaluate(node.content);
-            } else {
-              return print(tag,node);
-            };
-          };
+    // var temp_body = {body: [
+    //    {div:{id:"header"}}
+    //   ,temp_head
+    //   ,{div:{id:"footer"}}
+    // ]}
+
+    var temp_body = {body: [
+       {div:{id:"header"}}
+      ,{include:"<%= temp_head %>"}
+      ,{div:{id:"footer"}}
+    ]}
+
+    LS = {} || LS;
+
+    LS.renders = {};
+
+    LS.renders.XML = function(tag,attrs,contents) {
+      //XML Dom .> 
+    }
+
+    LS.renders.innerText = function(tag,attrs,contents) {
+      var attr_txt = "";
+      for (var i = attrs.length - 1; i >= 0; i--) {
+        attr_txt += ' '+attrs[i][0]+'="'+attrs[i][1]+'"';
+      };
+      return ("<"+tag+attr_txt+">"+contents.join("")+"</"+tag+">");
+    }
+
+    LS.renders.DOM = function(tag,attrs,contents) {
+      var dom = document.createElement(tag);
+      contents.reverse();
+      for (var i = attrs.length - 1; i >= 0; i--) {
+        if (attrs[i][0] == "class") attrs[i][0] = "className";
+        dom[attrs[i][0]] = attrs[i][1];
+      };
+      for (var i = contents.length - 1; i >= 0; i--) {
+        if (typeof contents[i] == "string") {
+          dom.innerHTML = contents[i];
         } else {
-          return print(tag,{content:node});
+          dom.appendChild(contents[i])
         };
       };
-      // for (tag in tmp) {
-      //   var el = tmp[tag];
-      //   if (typeof el == "object") {
-      //     if (el instanceof Array) {
-      //       // node.reverse();
-      //       for (var i = el.length - 1; i >= 0; i--) {
-      //         evaluate(el[i]);
-      //       };
-      //     } else {
-      //       if (!node.content) node.content = "";
-      //       if (typeof node.content != "string") {
-      //         evaluate(node.content);
-      //       } else {
-      //         return print(tag,node);
-      //       };
-      //     };
-      //   } else {
-      //     return print(tag,{content:node});
-      //   };
-      // }
-      return JSON.stringify(evaluate(tmp));
+      return dom;
+    }
+
+    LS.renders.Array = function(tag,attrs,contents) {
+      return [tag,attrs,contents];
+    }
+
+    LS.config = {
+      render: "innerText"
+    }
+
+
+    function render(temp, data) {
+      
+      function create_node(tag,attrs,contents){
+        return LS.renders[LS.config.render](tag,attrs,contents);
+      }
+
+      function parse_attr(attr,value) {
+        return [attr,value];
+      }
+
+      function create_attrs(node) {
+        var parsed = [];
+        if (typeof node == "object" && !(node instanceof Array)) {
+          for (attr in node){
+            if (attr != "content") parsed.push(parse_attr(attr,node[attr]))
+          }
+        };
+        return parsed;
+      }
+
+      function parse_content(content) {
+        var parsed = [];
+        if (content instanceof Array) {
+          for (var i = content.length - 1; i >= 0; i--) {
+            parsed.unshift(parse_node(content[i]))
+          };
+        } else {
+          if (typeof content == "string") {
+            if (!content) content = "";
+            parsed.unshift(tmpl(content,data));
+          } else {
+            if (!content.content) content.content = "";
+            if (typeof content.content == "string" ) {
+              parsed.unshift(tmpl(content.content,data));
+            } else {
+              for (var i = content.content.length - 1; i >= 0; i--) {
+                parsed.unshift(parse_node(content.content[i]));
+              };
+            };
+          };
+        };
+        return parsed;
+      };
+
+      function parse_node(node){ //map tag
+        for (tag in node) break;
+        return create_node(tag,create_attrs(node[tag]),parse_content(node[tag]))
+      };
+
+      return parse_node(temp);
     };
-    console.log(render(temp_home));
+
+
+
+    var tmpl = function tmpl(str, data){
+      var fn = new Function("obj",
+        "var p=[],print=function(){p.push.apply(p,arguments);};" +
+        "with(obj){p.push('" +
+          str
+          .replace(/[\r\t\n]/g, " ")
+          .split("<%").join("\t")
+          .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+          .replace(/\t=(.*?)%>/g, "',$1,'")
+          .split("\t").join("');")
+          .split("%>").join("p.push('")
+            .split("\r").join("\\'")
+            + "');}return p.join('');");
+      return data ? fn( data ) : fn;
+    };
+
+    // console.log(JSON.stringify(render(temp_home,{italic_text:"<i>foi</i>"})));
+    var retorno = render(temp_home,{italic_text:"<i>foi</i>"});
+    // var body = document.getElementsByTagName("body")[0]
+    // body.appendChild(retorno)
+    // console.log(retorno.innerHTML);
+    console.log(retorno)
 
 
   </script>
