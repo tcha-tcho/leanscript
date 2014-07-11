@@ -23,18 +23,17 @@
     ]};
 
     function render(temp, data) {
-      var result = [];
+      var tmp = JSON.parse( JSON.stringify(temp) );
       function print(tag,attr){ //map tag
         return (tag)//,JSON.stringify(attr));
       };
       function evaluate(node) {
-        if(typeof node != "string") {
-          for (tag in node) break;
-          node = String(tag) == "0"?node:node[tag];
-        };
+        for (tag in node) break;
+        node = String(tag)=="0"?node:node[tag];
+
         if (typeof node == "object") {
           if (node instanceof Array) {
-            node.reverse();
+            // node.reverse();
             for (var i = node.length - 1; i >= 0; i--) {
               evaluate(node[i]);
             };
@@ -43,15 +42,34 @@
             if (typeof node.content != "string") {
               evaluate(node.content);
             } else {
-              result.push(print(tag,node))
+              return print(tag,node);
             };
           };
         } else {
-          result.push(print(tag,{content:node}));
+          return print(tag,{content:node});
         };
-        return result.join(",")
       };
-      return evaluate(temp);
+      // for (tag in tmp) {
+      //   var el = tmp[tag];
+      //   if (typeof el == "object") {
+      //     if (el instanceof Array) {
+      //       // node.reverse();
+      //       for (var i = el.length - 1; i >= 0; i--) {
+      //         evaluate(el[i]);
+      //       };
+      //     } else {
+      //       if (!node.content) node.content = "";
+      //       if (typeof node.content != "string") {
+      //         evaluate(node.content);
+      //       } else {
+      //         return print(tag,node);
+      //       };
+      //     };
+      //   } else {
+      //     return print(tag,{content:node});
+      //   };
+      // }
+      return JSON.stringify(evaluate(tmp));
     };
     console.log(render(temp_home));
 
