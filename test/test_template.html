@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Testing template engine</title>
+</head>
+<body>
+  <script type="text/javascript">
+    var temp_home = {body:[
+       {div1:{id:"blabla",content:"nononono"}}
+      ,{div2:"nononono2"}
+      ,{ul:{class:"some_class",content:[
+         {li1:{class:"selected",content:"nonono3"}}
+        ,{li2:"nonono3"}
+        ,{li3:{content:[
+            {span1:"test1"}
+           ,{span2:"test2"}
+           ,{span3:{content:[
+               {b:"bold"}
+              ,{i:"<%= italic_text %>"}
+            ]}}
+         ]}}
+      ]}}
+    ]};
+
+    function render(temp, data) {
+      var result = [];
+      function print(tag,attr){ //map tag
+        return (tag)//,JSON.stringify(attr));
+      };
+      function evaluate(node) {
+        if(typeof node != "string") {
+          for (tag in node) break;
+          node = String(tag) == "0"?node:node[tag];
+        };
+        if (typeof node == "object") {
+          if (node instanceof Array) {
+            node.reverse();
+            for (var i = node.length - 1; i >= 0; i--) {
+              evaluate(node[i]);
+            };
+          } else {
+            if (!node.content) node.content = "";
+            if (typeof node.content != "string") {
+              evaluate(node.content);
+            } else {
+              result.push(print(tag,node))
+            };
+          };
+        } else {
+          result.push(print(tag,{content:node}));
+        };
+        return result.join(",")
+      };
+      return evaluate(temp);
+    };
+    console.log(render(temp_home));
+
+
+  </script>
+</body>
+</html>
