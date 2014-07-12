@@ -1,0 +1,34 @@
+body,html {
+  font-family: sans-serif;
+  color: #999;
+}
+#views {
+  margin-top: 50%;
+  display: relative;
+}
+#view,#output { 
+  position: absolute;
+  display: inline-block;
+  width: 50%;
+  height: 360px;
+  top: 100px;
+  bottom: 0;
+}
+#view {
+  left:0;
+}
+#output,#dom {
+  right:0;
+}
+#formats {
+  position: absolute;
+  display: inline-block;
+  right: 20px;
+}
+h1 {
+  font-size: 30px;
+  font-weight: lighter;
+}
+/*.hide {
+  display: none !important;
+}*/

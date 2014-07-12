@@ -1,164 +1,111 @@
 <!DOCTYPE html>
-<html>
 <head>
-  <title>Testing template engine</title>
+  <title>ThinRender: Proof of Concept</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script type="text/javascript" src="thin.render.js"></script>
+  <script type="text/javascript" src="vkbeautify.js"></script>
 </head>
 <body>
-  <script type="text/javascript">
 
-    var temp_home = {body:[
-       {div1:{id:"blabla",class:"blaclass",content:"nononono"}}
-      ,{div2:"nononono2"}
-      ,{ul:{class:"some_class",content:[
-         {li1:{class:"selected",content:"nonono3"}}
-        ,{li2:"nonono3"}
-        ,{li3:{content:[
-            {span1:"test1"}
-           ,{span2:"test2"}
-           ,{span3:{content:[
-               {b:"bold"}
-              ,{i:"<%= italic_text %>"}
-            ]}}
-         ]}}
-      ]}}
-    ]};
+<script src="http://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js" type="text/javascript" charset="utf-8"></script>
+<h1>Proof of Concept</h1>
+<div id="formats">
+  <input type="radio" onchange="format();" name="format" value="html" checked>html
+  <input type="radio" onchange="format();" name="format" value="dom">dom
+  <input type="radio" onchange="format();" name="format" value="xml">xml
+  <input type="radio" onchange="format();" name="format" value="array">array
+</div>
+<div id="views">
+  <div id="view">
+var view_header = {
+  div:"Header"
+};
+var view_home = {div:[
+   view_header
+  ,{div1:{id:"blabla",class:"blaclass",content:"nononono"}}
+  ,{div2:"nononono2"}
+  ,{ul:{class:"some_class",content:[
+     {li1:{class:"selected",content:"nonono3"}}
+    ,{li2:"nonono3"}
+    ,{li3:{content:[
+        {span1:"test1"}
+       ,{span2:"test2"}
+       ,{span3:{content:[
+           {b:"bold"}
+          ,{i:"<%= italic_text %>"}
+        ]}}
+     ]}}
+  ]}}
+]};
+var view_body = {body: [
+   {div:{id:"header"}}
+  ,{include:"<%= view_head %>"}
+  ,{div:{id:"footer"}}
+]}
+  </div>
+  <div id="output"></div>
+</div>
+    
+<script>
+  var editor = ace.edit("view");
+  editor.setTheme("ace/theme/monokai");
+  editor.setFontSize(12);
+  editor.getSession().setMode("ace/mode/javascript");
+  editor.getSession().setTabSize(2);
+  var output = ace.edit("output");
+  output.setFontSize(12);
+  output.setTheme("ace/theme/monokai");
+  output.getSession().setTabSize(2);
 
-    var temp_head = {
-      div:"Header"
-    }
+  var output_dom = document.querySelectorAll("#output")[0];
+  var dom_dom = document.querySelectorAll("#dom")[0];
 
-    // var temp_body = {body: [
-    //    {div:{id:"header"}}
-    //   ,temp_head
-    //   ,{div:{id:"footer"}}
-    // ]}
+  var beautify = {
+     "html" :"xml"
+    ,"xml"  :"xml"
+    ,"css"  :"css"
+    ,"array":"json"
+    ,"dom"  :"xml"
+  };
 
-    var temp_body = {body: [
-       {div:{id:"header"}}
-      ,{include:"<%= temp_head %>"}
-      ,{div:{id:"footer"}}
-    ]}
-
-    LS = {} || LS;
-
-    LS.renders = {};
-
-    LS.renders.XML = function(tag,attrs,contents) {
-      //XML Dom .> 
-    }
-
-    LS.renders.innerText = function(tag,attrs,contents) {
-      var attr_txt = "";
-      for (var i = attrs.length - 1; i >= 0; i--) {
-        attr_txt += ' '+attrs[i][0]+'="'+attrs[i][1]+'"';
-      };
-      return ("<"+tag+attr_txt+">"+contents.join("")+"</"+tag+">");
-    }
-
-    LS.renders.DOM = function(tag,attrs,contents) {
-      var dom = document.createElement(tag);
-      contents.reverse();
-      for (var i = attrs.length - 1; i >= 0; i--) {
-        if (attrs[i][0] == "class") attrs[i][0] = "className";
-        dom[attrs[i][0]] = attrs[i][1];
-      };
-      for (var i = contents.length - 1; i >= 0; i--) {
-        if (typeof contents[i] == "string") {
-          dom.innerHTML = contents[i];
-        } else {
-          dom.appendChild(contents[i])
-        };
-      };
-      return dom;
-    }
-
-    LS.renders.Array = function(tag,attrs,contents) {
-      return [tag,attrs,contents];
-    }
-
-    LS.config = {
-      render: "innerText"
-    }
-
-
-    function render(temp, data) {
-      
-      function create_node(tag,attrs,contents){
-        return LS.renders[LS.config.render](tag,attrs,contents);
+  function get_format() {
+    var radios = document.getElementsByTagName('input');
+    var value;
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].type === 'radio' && radios[i].checked) {
+        value = radios[i].value;       
       }
+    }
+    return value;
+  }
 
-      function parse_attr(attr,value) {
-        return [attr,value];
+  editor.on("change",function(){
+    var format = get_format();
+    var ready = true;
+    try{
+      eval(editor.getValue());
+    } catch(e) {
+      ready = false;
+    }
+    if (ready) {
+      var retorno = thin.render.the(view_home,{italic_text:"<i>foi</i>",__format:format});
+      if(format == "dom"){
+        // output_dom.className = "hide";
+        // dom_dom.className = "";
+        // dom_dom.innerHTML = "";
+        dom_dom.appendChild(retorno);
+      } else {
+        // output_dom.className = "";
+        // dom_dom.className = "hide";
+        output.getSession().setMode("ace/mode/"+format);
+        output.setValue(vkbeautify[beautify[format]](retorno),-1)
       }
-
-      function create_attrs(node) {
-        var parsed = [];
-        if (typeof node == "object" && !(node instanceof Array)) {
-          for (attr in node){
-            if (attr != "content") parsed.push(parse_attr(attr,node[attr]))
-          }
-        };
-        return parsed;
-      }
-
-      function parse_content(content) {
-        var parsed = [];
-        if (content instanceof Array) {
-          for (var i = content.length - 1; i >= 0; i--) {
-            parsed.unshift(parse_node(content[i]))
-          };
-        } else {
-          if (typeof content == "string") {
-            if (!content) content = "";
-            parsed.unshift(tmpl(content,data));
-          } else {
-            if (!content.content) content.content = "";
-            if (typeof content.content == "string" ) {
-              parsed.unshift(tmpl(content.content,data));
-            } else {
-              for (var i = content.content.length - 1; i >= 0; i--) {
-                parsed.unshift(parse_node(content.content[i]));
-              };
-            };
-          };
-        };
-        return parsed;
-      };
-
-      function parse_node(node){ //map tag
-        for (tag in node) break;
-        return create_node(tag,create_attrs(node[tag]),parse_content(node[tag]))
-      };
-
-      return parse_node(temp);
     };
+  });
 
+  function format() { editor._emit("change") };
+  editor._emit("change")
 
-
-    var tmpl = function tmpl(str, data){
-      var fn = new Function("obj",
-        "var p=[],print=function(){p.push.apply(p,arguments);};" +
-        "with(obj){p.push('" +
-          str
-          .replace(/[\r\t\n]/g, " ")
-          .split("<%").join("\t")
-          .replace(/((^|%>)[^\t]*)'/g, "$1\r")
-          .replace(/\t=(.*?)%>/g, "',$1,'")
-          .split("\t").join("');")
-          .split("%>").join("p.push('")
-            .split("\r").join("\\'")
-            + "');}return p.join('');");
-      return data ? fn( data ) : fn;
-    };
-
-    // console.log(JSON.stringify(render(temp_home,{italic_text:"<i>foi</i>"})));
-    var retorno = render(temp_home,{italic_text:"<i>foi</i>"});
-    // var body = document.getElementsByTagName("body")[0]
-    // body.appendChild(retorno)
-    // console.log(retorno.innerHTML);
-    console.log(retorno)
-
-
-  </script>
+</script>
 </body>
 </html>
