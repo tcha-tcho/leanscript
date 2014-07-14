@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
   <title>ThinRender: Proof of Concept</title>
-  <link href='http://fonts.googleapis.com/css?family=Ek+Mukta:200|Roboto' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Roboto:400,100' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
   <link rel="stylesheet" type="text/css" href="style.css">
   <script type="text/javascript" src="thin.render.js"></script>
@@ -12,7 +12,7 @@
 <div id="formats" class="pure-menu pure-menu-open pure-menu-horizontal">
   <ul id="ul_formats">
     <li id="to_jml"><a onclick="parse_jml(this);"  href="#">to JML</a></li>
-    <li            ><a onclick="set_format(this);" href="#">html</a></li>
+    <li            ><a onclick="set_format(this);" href="#" class="pure-menu-selected">html</a></li>
     <li            ><a onclick="set_format(this);" href="#">dom</a></li>
     <li            ><a onclick="set_format(this);" href="#">xml</a></li>
     <li            ><a onclick="set_format(this);" href="#">dom_xml</a></li>
@@ -73,6 +73,7 @@ var view_body = {body: [
   output.setFontSize(12);
   output.setTheme("ace/theme/monokai");
   output.getSession().setTabSize(2);
+  output.getSession().setUseWrapMode(true);
 
   var dom_win = document.querySelectorAll("#dom")[0];
   var to_jml = document.querySelectorAll("#to_jml")[0];
