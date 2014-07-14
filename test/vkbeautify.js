@@ -16,6 +16,7 @@
 *        vkbeautify.json(text [,indent_pattern]);
 *        vkbeautify.css(text [,indent_pattern]);
 *        vkbeautify.sql(text [,indent_pattern]);
+*        vkbeautify.bbcode(text [,indent_pattern]);
 *
 *        @text - String; text to beatufy;
 *        @indent_pattern - Integer | String;
@@ -82,10 +83,12 @@ function vkbeautify(){
   this.shift = createShiftArr(this.step);
 };
 
-vkbeautify.prototype.xml = function(text,step) {
+vkbeautify.prototype.xml = function(text,step,tag) {
 
-  var ar = text.replace(/>\s{0,}</g,"><")
-         .replace(/</g,"~::~<")
+  var t = tag || ["<",">"];
+
+  var ar = text.replace(new RegExp(t[1]+"\s{0,}"+t[0],"g"),t[1]+t[0])
+         .replace(new RegExp(t[0],"g"),"~::~"+t[0])
          .replace(/\s*xmlns\:/g,"~::~xmlns:")
          .replace(/\s*xmlns\=/g,"~::~xmlns=")
          .split('~::~'),
@@ -98,21 +101,23 @@ vkbeautify.prototype.xml = function(text,step) {
 
     for(ix=0;ix<len;ix++) {
       // start comment or <![CDATA[...]]> or <!DOCTYPE //
-      if(ar[ix].search(/<!/) > -1) { 
+      if(ar[ix].search(new RegExp(t[0]+"!")) > -1) { 
         str += shift[deep]+ar[ix];
         inComment = true; 
         // end comment  or <![CDATA[...]]> //
-        if(ar[ix].search(/-->/) > -1 || ar[ix].search(/\]>/) > -1 || ar[ix].search(/!DOCTYPE/) > -1 ) { 
+        if(ar[ix].search(new RegExp("--"+t[1])) > -1 || ar[ix].search( new RegExp("\]"+t[1]) ) > -1 || ar[ix].search(/!DOCTYPE/) > -1 ) { 
           inComment = false; 
         }
       } else 
       // end comment  or <![CDATA[...]]> //
-      if(ar[ix].search(/-->/) > -1 || ar[ix].search(/\]>/) > -1) { 
+      if(ar[ix].search( new RegExp("--"+t[1]) ) > -1 || ar[ix].search( new RegExp("\]"+t[1]) ) > -1) { 
         str += ar[ix];
         inComment = false; 
       } else 
       // <elm></elm> //
       if( /^<\w/.exec(ar[ix-1]) && /^<\/\w/.exec(ar[ix]) &&
+      // if( new RegExp("^"+t[0]+"\w").exec(ar[ix-1]) && new RegExp("^"+t[0]+"\/\w").exec(ar[ix]) &&
+
         /^<[\w:\-\.\,]+/.exec(ar[ix-1]) == /^<\/[\w:\-\.\,]+/.exec(ar[ix])[0].replace('/','')) { 
         str += ar[ix];
         if(!inComment) deep--;
@@ -148,6 +153,10 @@ vkbeautify.prototype.xml = function(text,step) {
     }
     
   return  (str[0] == '\n') ? str.slice(1) : str;
+}
+
+vkbeautify.prototype.bbcode = function(text,step,tag) {
+  return vkbeautify.xml(text,step,["[","]"]);
 }
 
 vkbeautify.prototype.json = function(text,step) {

@@ -1,38 +1,51 @@
 <!DOCTYPE html>
 <head>
   <title>ThinRender: Proof of Concept</title>
+  <link href='http://fonts.googleapis.com/css?family=Ek+Mukta:200|Roboto' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
   <link rel="stylesheet" type="text/css" href="style.css">
   <script type="text/javascript" src="thin.render.js"></script>
   <script type="text/javascript" src="vkbeautify.js"></script>
 </head>
 <body>
 
-<script src="http://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js" type="text/javascript" charset="utf-8"></script>
-<h1>Proof of Concept</h1>
-<div id="formats">
-  <input type="radio" onchange="format();" name="format" value="html" checked>html
-  <input type="radio" onchange="format();" name="format" value="dom">dom
-  <input type="radio" onchange="format();" name="format" value="xml">xml
-  <input type="radio" onchange="format();" name="format" value="array">array
+<div id="formats" class="pure-menu pure-menu-open pure-menu-horizontal">
+  <ul id="ul_formats">
+    <li id="to_jml"><a onclick="parse_jml(this);"  href="#">to JML</a></li>
+    <li            ><a onclick="set_format(this);" href="#">html</a></li>
+    <li            ><a onclick="set_format(this);" href="#">dom</a></li>
+    <li            ><a onclick="set_format(this);" href="#">xml</a></li>
+    <li            ><a onclick="set_format(this);" href="#">dom_xml</a></li>
+    <li            ><a onclick="set_format(this);" href="#">bbcode</a></li>
+    <li            ><a onclick="set_format(this);" href="#">array</a></li>
+  </ul>
 </div>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js" type="text/javascript" charset="utf-8"></script>
 <div id="views">
-  <div id="view">
+  <div id="view">//JML - new JSON Markup Language - http://jmljs.com
 var view_header = {
-  div:"Header"
+  h1:"Header"
 };
 var view_home = {div:[
-   view_header
-  ,{div1:{id:"blabla",class:"blaclass",content:"nononono"}}
-  ,{div2:"nononono2"}
+   {"!":"This is a comment"}
+  ,view_header
+  ,{custom:"nononono2"}
+  ,{div:{id:"blabla",class:"blaclass",content:"nononono"}}
+  ,{a:{href:"http://jmljs.com",content:"Link!"}}
   ,{ul:{class:"some_class",content:[
-     {li1:{class:"selected",content:"nonono3"}}
-    ,{li2:"nonono3"}
-    ,{li3:{content:[
-        {span1:"test1"}
-       ,{span2:"test2"}
-       ,{span3:{content:[
+     {li:{class:"selected",content:"nonono1"}}
+    ,{li:"nonono2"}
+    ,{li:{content:[
+        {span:" test1"}
+       ,{span:{style:"color:red;",content:" test2"}}
+       ,{span:{style:"font-size:25px;",content:" test3"}}
+       ,{br:[]}
+       ,{img:{src:"bike.jpg"}}
+       ,{br:""}
+       ,{span:{content:[
            {b:"bold"}
-          ,{i:"<%= italic_text %>"}
+          ,{i:" <%= inserted %>"}
         ]}}
      ]}}
   ]}}
@@ -44,9 +57,13 @@ var view_body = {body: [
 ]}
   </div>
   <div id="output"></div>
+  <div id="dom" class="hide"></div>
 </div>
+
+
     
 <script>
+  var format = "html";
   var editor = ace.edit("view");
   editor.setTheme("ace/theme/monokai");
   editor.setFontSize(12);
@@ -57,55 +74,109 @@ var view_body = {body: [
   output.setTheme("ace/theme/monokai");
   output.getSession().setTabSize(2);
 
-  var output_dom = document.querySelectorAll("#output")[0];
-  var dom_dom = document.querySelectorAll("#dom")[0];
+  var dom_win = document.querySelectorAll("#dom")[0];
+  var to_jml = document.querySelectorAll("#to_jml")[0];
 
   var beautify = {
-     "html" :"xml"
-    ,"xml"  :"xml"
-    ,"css"  :"css"
-    ,"array":"json"
-    ,"dom"  :"xml"
+     "html"  :"xml"
+    ,"xml"   :"xml"
+    ,"css"   :"css"
+    ,"array" :"json"
+    ,"dom"   :"xml"
+    ,"bbcode":"xml"
   };
 
-  function get_format() {
-    var radios = document.getElementsByTagName('input');
-    var value;
-    for (var i = 0; i < radios.length; i++) {
-      if (radios[i].type === 'radio' && radios[i].checked) {
-        value = radios[i].value;       
-      }
-    }
-    return value;
-  }
-
   editor.on("change",function(){
-    var format = get_format();
-    var ready = true;
     try{
       eval(editor.getValue());
-    } catch(e) {
-      ready = false;
-    }
-    if (ready) {
-      var retorno = thin.render.the(view_home,{italic_text:"<i>foi</i>",__format:format});
-      if(format == "dom"){
-        // output_dom.className = "hide";
-        // dom_dom.className = "";
-        // dom_dom.innerHTML = "";
-        dom_dom.appendChild(retorno);
+      var retorno = thin.render.the(view_home,{inserted:"text inserted",__format:format});
+      if(format.match(/(xml|html|dom|dom_xml)/ig)){
+        to_jml.className = "";
       } else {
-        // output_dom.className = "";
-        // dom_dom.className = "hide";
-        output.getSession().setMode("ace/mode/"+format);
-        output.setValue(vkbeautify[beautify[format]](retorno),-1)
+        to_jml.className = "hide";
       }
-    };
+      if(format.match(/(dom|dom_xml)/ig)){
+        dom_win.className = "";
+        dom_win.innerHTML = "";
+        dom_win.appendChild(retorno);
+      } else {
+        dom_win.className = "hide";
+        output.setValue(vkbeautify[beautify[format]](retorno,2),-1)
+        if (format == "bbcode") format = "html";
+        output.getSession().setMode("ace/mode/"+format);
+      }
+    } catch(e) {
+    }
   });
 
-  function format() { editor._emit("change") };
-  editor._emit("change")
+  function unselect(el){
+    var lis = document.querySelectorAll("#ul_formats > li a");
+    for (var i = 0; i < lis.length; i++) {
+      lis[i].setAttribute("class","");
+    };
+    el.className = "pure-menu-selected";
+  }
 
+  function parse_jml(el){
+    unselect(el);
+    if(format.match(/(xml|html)/ig)){
+      var doc = output.getValue();
+    } else {
+      var doc = dom_win.firstChild;
+    }
+    output.setValue(vkbeautify.json(thin.render.jml.from("html",doc),2),-1);
+  };
+
+  function set_format(el) { 
+    unselect(el);
+    format = el.innerHTML;
+    editor._emit("change")
+  };
+
+  editor._emit("change")
 </script>
+
+
+
+
+
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<div class="hero">
+  <div class="hero-titles">
+    <h1 class="hero-site">Thin.render</h1>
+    <h2 class="hero-tagline">The coolest way to work with templates. Thin.render is a portable 2kb JS code.</h2>
+  </div>
+
+  <div class="hero-cta">
+    <div class="is-code-full">
+      <pre class="code code-wrap" data-language="html"><code class="rainbow"><span class="support tag"><span class="support tag">&lt;</span><span class="support tag-name">script</span></span> <span class="support attribute">type</span><span class="support operator">=</span><span class="string quote">"</span><span class="string value">text/javascript</span><span class="string quote">"</span> <span class="support attribute">src</span><span class="support operator">=</span><span class="string quote">"</span><span class="string value">./thin.render.js</span><span class="string quote">"</span><span class="support tag close">&gt;</span><span class="support tag">&lt;</span><span class="support tag-name">script</span><span class="support tag close">&gt;</span></span></code></pre>
+    </div>
+
+    <p>
+      <a class="button-cta pure-button" href="/start/">Get Started</a>
+      <a class="button-secondary pure-button" href="https://github.com/tcha-tcho/thinjs/">View on GitHub</a>
+    </p>
+  </div>
+</div>
+
+
+
+
+
 </body>
 </html>
