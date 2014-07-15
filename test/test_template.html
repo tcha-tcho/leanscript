@@ -9,6 +9,13 @@
 </head>
 <body>
 
+<div id="samples" class="pure-menu pure-menu-open pure-menu-horizontal">
+  <ul id="ul_samples">
+    <li><a onclick="set_sample(this);" href="#" class="pure-menu-selected">sample1</a></li>
+    <li><a onclick="set_sample(this);" href="#">sample2</a></li>
+  </ul>
+</div>
+
 <div id="formats" class="pure-menu pure-menu-open pure-menu-horizontal">
   <ul id="ul_formats">
     <li id="to_jml"><a onclick="parse_jml(this);"  href="#">to JML</a></li>
@@ -61,6 +68,109 @@ var view_body = {body: [
 </div>
 
 
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<div class="hero">
+  <div class="hero-titles">
+    <img src="./Logo.png" width="500px">
+    <h2 class="hero-tagline">The coolest way to work with templates. Thin.render is a portable 2kb JS code.</h2>
+  </div>
+
+  <div class="hero-cta">
+    <div class="is-code-full">
+      <pre class="code code-wrap" data-language="html"><code class="rainbow"><span class="support tag"><span class="support tag">&lt;</span><span class="support tag-name">script</span></span> <span class="support attribute">type</span><span class="support operator">=</span><span class="string quote">"</span><span class="string value">text/javascript</span><span class="string quote">"</span> <span class="support attribute">src</span><span class="support operator">=</span><span class="string quote">"</span><span class="string value">./thin.render.js</span><span class="string quote">"</span><span class="support tag close">&gt;</span><span class="support tag">&lt;</span><span class="support tag-name">script</span><span class="support tag close">&gt;</span></span></code></pre>
+    </div>
+
+    <p>
+      <a class="button-cta pure-button" href="/start/">Get Started</a>
+      <a class="button-secondary pure-button" href="https://github.com/tcha-tcho/thinjs/">View on GitHub</a>
+    </p>
+
+    <br>
+    <br>
+    <br>
+    <div class="hero-titles">
+      <h1 class="hero-site">Styles</h1>
+      <h2 class="hero-tagline">Make your styles run everywhere. \o/</h2>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<div id="styles">
+  <div id="style">//JCSS - new JSON Markup Language - http://jmljs.com
+var base_style = {
+
+}
+
+var style = {
+  "div":{id:"my_id",class:"some_class",style:{
+    "background":"black"
+  }}
+  ,"any":{
+    "background":"white"
+  }
+  ,"nav": {
+    "ul": {
+      "color": "gray"
+    }
+    ,"li": {
+      "display": "inline-block"
+    }
+  }
+}
+
+var style = [
+  {tag: "div", style: {
+
+  }}
+  ,{id: "my_style", style: {
+
+  }}
+  ,{tag: "div", style: {
+    
+  }}
+]
+  </div>
+  <div id="style_output">
+  /* soon */
+  </div>
+</div>
+
+
+
     
 <script>
   var format = "html";
@@ -74,6 +184,17 @@ var view_body = {body: [
   output.setTheme("ace/theme/monokai");
   output.getSession().setTabSize(2);
   output.getSession().setUseWrapMode(true);
+
+  var style = ace.edit("style");
+  style.setTheme("ace/theme/monokai");
+  style.setFontSize(12);
+  style.getSession().setMode("ace/mode/javascript");
+  style.getSession().setTabSize(2);
+  var style_output = ace.edit("style_output");
+  style_output.setFontSize(12);
+  style_output.getSession().setMode("ace/mode/css");
+  style_output.setTheme("ace/theme/monokai");
+  style_output.getSession().setTabSize(2);
 
   var dom_win = document.querySelectorAll("#dom")[0];
   var to_jml = document.querySelectorAll("#to_jml")[0];
@@ -110,8 +231,8 @@ var view_body = {body: [
     }
   });
 
-  function unselect(el){
-    var lis = document.querySelectorAll("#ul_formats > li a");
+  function unselect(el,list){
+    var lis = document.querySelectorAll("#ul_"+list+" > li a");
     for (var i = 0; i < lis.length; i++) {
       lis[i].setAttribute("class","");
     };
@@ -129,10 +250,16 @@ var view_body = {body: [
   };
 
   function set_format(el) { 
-    unselect(el);
+    unselect(el,"formats");
     format = el.innerHTML;
     editor._emit("change")
   };
+
+  function set_sample(el) {
+    unselect(el,"samples");
+    sample = el.innerHTML;
+    editor._emit("change")
+  }
 
   editor._emit("change")
 </script>
@@ -140,40 +267,6 @@ var view_body = {body: [
 
 
 
-
-
-
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<div class="hero">
-  <div class="hero-titles">
-    <h1 class="hero-site">Thin.render</h1>
-    <h2 class="hero-tagline">The coolest way to work with templates. Thin.render is a portable 2kb JS code.</h2>
-  </div>
-
-  <div class="hero-cta">
-    <div class="is-code-full">
-      <pre class="code code-wrap" data-language="html"><code class="rainbow"><span class="support tag"><span class="support tag">&lt;</span><span class="support tag-name">script</span></span> <span class="support attribute">type</span><span class="support operator">=</span><span class="string quote">"</span><span class="string value">text/javascript</span><span class="string quote">"</span> <span class="support attribute">src</span><span class="support operator">=</span><span class="string quote">"</span><span class="string value">./thin.render.js</span><span class="string quote">"</span><span class="support tag close">&gt;</span><span class="support tag">&lt;</span><span class="support tag-name">script</span><span class="support tag close">&gt;</span></span></code></pre>
-    </div>
-
-    <p>
-      <a class="button-cta pure-button" href="/start/">Get Started</a>
-      <a class="button-secondary pure-button" href="https://github.com/tcha-tcho/thinjs/">View on GitHub</a>
-    </p>
-  </div>
-</div>
 
 
 

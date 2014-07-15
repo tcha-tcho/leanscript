@@ -171,8 +171,17 @@ thin.config = {
 
 /**
  * TODO:
- * CSS converter
+ * Variables
+ * Nesting
+ * Partials
+ * Import
+ * Mixins
+ * Inheritance
+ * Operators
+ * 
  */
+
+  
   o.render.style = function() {
     
   }
