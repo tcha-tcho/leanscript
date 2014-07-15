@@ -171,16 +171,70 @@ thin.config = {
 
 /**
  * TODO:
- * Variables
+ * Import -
+ * Numbers -
+ * Variables -
+ * Sharing -
+ * Partials - Import from elsewhere
+ * Mixins - using 'use'
+ * Inheritance - 'use'
+ * Operators - pure javascript
+ * Color Methods
  * Nesting
- * Partials
- * Import
- * Mixins
- * Inheritance
- * Operators
- * 
  */
 
+  var default_color = 0xffffff;
+  var alpha = 0.5;
+  var saturation = 0.2;
+  var important = " !important"
+
+  var base_style = [
+    {tag: "b",style:{
+      "font-weight": "bolder"
+      ,"font-size": 32 //Number default 'px;'
+    }}
+  ]
+
+  var div_basic = {
+    tag: "div", style: {
+      display: "inline-block"
+    }
+  }
+  var darker = {
+     background: "gray"
+    ,color: "white"
+  }
+
+  var borderRadius = function (radius) { //Mixins
+    return {
+       "-webkit-border-radius:": radius
+      ,"   -moz-border-radius:": radius
+      ,"    -ms-border-radius:": radius
+      ,"        border-radius:": radius
+    };
+  };
+
+
+  var style = [
+    ,base_style //Import
+    ,div_basic
+    ,{class:"my_class", use: darker, style: { //Sharing with 'use'
+      border: "black"
+    }}
+    ,{id:"my_id", use: borderRadius(4), style: { //Sharing with 'use'
+      border: "black"
+    }}
+    {tag: "div", style: {
+      color: default_color //Variables
+    }}
+    ,{id: "my_style", style: {
+
+    }}
+    ,{tag: "div", style: {
+      
+    }}
+  ]
+  console.log(style)
   
   o.render.style = function() {
     
